@@ -1,0 +1,254 @@
+CREATE DATABASE firma
+    WITH 
+    OWNER = postgres
+    ENCODING = 'UTF8'
+    LC_COLLATE = 'Polish_Poland.1250'
+    LC_CTYPE = 'Polish_Poland.1250'
+    TABLESPACE = pg_default
+    CONNECTION LIMIT = -1;
+
+COMMENT ON DATABASE firma
+    IS 'Database for D. Sobczynski';
+
+CREATE SCHEMA ksiegowosc;
+
+CREATE TABLE public.pracownicy
+(
+    id_pracownika integer NOT NULL,
+    imie character varying COLLATE pg_catalog."default",
+    nazwisko character varying COLLATE pg_catalog."default",
+    adres character varying COLLATE pg_catalog."default",
+    telefon bigint,
+    CONSTRAINT pracownicy_pkey PRIMARY KEY (id_pracownika)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.pracownicy
+    OWNER to postgres;
+	
+-- Table: public.godziny
+
+-- DROP TABLE public.godziny;
+
+CREATE TABLE public.godziny
+(
+    id_godziny integer NOT NULL,
+    data date,
+    liczba_godzin integer,
+    id_pracownika integer,
+    CONSTRAINT godziny_pkey PRIMARY KEY (id_godziny),
+    CONSTRAINT id_pracownika FOREIGN KEY (id_pracownika)
+        REFERENCES public.pracownicy (id_pracownika) MATCH SIMPLE
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.godziny
+    OWNER to postgres;
+	
+-- Table: public.pensje
+
+-- DROP TABLE public.pensje;
+
+CREATE TABLE public.pensje
+(
+    id_pensji integer NOT NULL,
+    stanowisko character varying COLLATE pg_catalog."default",
+    kwota double precision,
+    id_premii integer,
+    CONSTRAINT pensje_pkey PRIMARY KEY (id_pensji),
+    CONSTRAINT id_premii FOREIGN KEY (id_premii)
+        REFERENCES public.premie (id_premii) MATCH SIMPLE
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.pensje
+    OWNER to postgres;
+	
+-- Table: public.premie
+
+-- DROP TABLE public.premie;
+
+CREATE TABLE public.premie
+(
+    id_premii integer NOT NULL,
+    rodzaj character varying COLLATE pg_catalog."default",
+    kwota double precision,
+    CONSTRAINT premie_pkey PRIMARY KEY (id_premii)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.premie
+    OWNER to postgres;
+	
+CREATE TABLE ksiegowosc.wynagrodzenie
+(
+    id_wynagrodzenia integer NOT NULL,
+    data date,
+    id_pracownika integer,
+    id_godziny integer,
+    id_pensji integer,
+    id_premii integer,
+    CONSTRAINT wynagrodzenie_pkey PRIMARY KEY (id_wynagrodzenia),
+    CONSTRAINT id_godziny FOREIGN KEY (id_godziny)
+        REFERENCES ksiegowosc.godziny (id_godziny) MATCH SIMPLE
+    CONSTRAINT id_pensji FOREIGN KEY (id_pensji)
+        REFERENCES ksiegowosc.pensje (id_pensji) MATCH SIMPLE
+    CONSTRAINT id_pracownika FOREIGN KEY (id_pracownika)
+        REFERENCES ksiegowosc.pracownicy (id_pracownika) MATCH SIMPLE
+    CONSTRAINT id_premii FOREIGN KEY (id_premii)
+        REFERENCES ksiegowosc.premie (id_premii) MATCH SIMPLE
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE ksiegowosc.wynagrodzenie
+    OWNER to postgres;
+
+INSERT INTO pracownicy(id_pracownika, imie, nazwisko, adres, telefon)
+VALUES (1, 'Jan', 'Kowalski', 'Ogrodowa 5', 498742742072),
+(2, 'Jan', 'Kowalski', 'Ogrodowa 24', 4987427422572),
+(3, 'Jan', 'Kowal', 'Ogrodowa 243', 4987427245822072),
+(4, 'Jan', 'Kowalczyk', 'Ogrodowa 4', 4987448292072),
+(5, 'Jan', 'Kowalik', 'Ogrodowa 43', 4987242494072),
+(6, 'Jan', 'Kowalewicz', 'Ogrodowa 2', 498742742072),
+(7, 'Jan', 'Kowalek', 'Ogrodowa 12', 49874242929072),
+(8, 'Jan', 'Kowalicki', 'Ogrodowa 11', 498742442242072),
+(9, 'Jan', 'Kowalowy', 'Ogrodowa 39', 498742744422072),
+(10, 'Jan', 'Kowalewski', 'Ogrodowa 78', 498191092072);
+
+INSERT INTO godziny(id_godziny, data, liczba_godzin , id_pracownika)
+VALUES (1, '2020-03-24', 8, 10),
+(2, '2020-03-27', 4, 9),
+(3, '2020-03-28', 5, 8),
+(4, '2020-03-24', 7, 7),
+(5, '2020-03-27', 8, 6),
+(6, '2020-03-28', 4, 5),
+(7, '2020-03-22', 5, 4),
+(8, '2020-03-23', 7, 3),
+(9, '2020-03-28', 10, 2),
+(10, '2020-03-23', 9, 1);
+
+INSERT INTO pensje(id_pensji, stanowisko, kwota, id_premii)
+VALUES (1, 'dyrektor', 7098, 10),
+(2, 'technik', 3190, 9),
+(3, 'technik', 3190, 8),
+(4, 'technik', 3190, 7),
+(5, 'elektryk', 2398, 6),
+(6, 'dozorca', 1388, 5),
+(7, 'sekretarz', 3908, 4),
+(8, 'kierownik', 4838, 3),
+(9, 'stazysta', 0, 2),
+(10, 'praktykant', 0, 1);
+
+INSERT INTO premie(id_premii, rodzaj, kwota)
+VALUES (1, 'dodatek', 500),
+(2, 'premia motywacyjna', 200),
+(3, 'dodatek', 300),
+(4, 'premia', 400),
+(5, 'wyrownanie', 300),
+(6, 'nadgodziny', 200),
+(7, 'dodatek', 300),
+(8, 'premia', 100),
+(9, 'dodatek', 500),
+(10, 'dodatek', 500);
+
+#Zad 6
+SELECT id_pracownika, nazwisko FROM ksiegowosc.pracownicy;
+
+SELECT id_pracownika
+FROM wynagrodzenie
+JOIN pensje
+ON wynagrodzenie.id_pensji = pensje.id_pensji
+WHERE kwota>1000;
+
+SELECT id_pracownika
+FROM wynagrodzenie
+JOIN premie
+ON wynagrodzenie.id_premii = premie.id_premii
+JOIN pensje
+ON wynagrodzenie.id_pensji = pensje.id_pensji
+WHERE premia.kwota = 0 AND pensja.kwota > 2000;
+
+SELECT * FROM pracownicy WHERE imie = 'J%';
+
+SELECT * FROM pracownicy WHERE nazwisko = '%n%' AND imie = '%a';
+
+SELECT imie, naziwsko FROM pracownicy 
+JOIN godziny 
+ON pracownicy.id_pracownika = godziny.id_pracownika 
+WHERE liczba_godzin > 160;
+
+SELECT imie, nazwisko FROM pracownicy 
+JOIN wynagrodzenie
+ON pracownicy.id_pracownika = wynagrodzenie.id_pracownika
+JOIN pensje 
+ON wynagrodzenie.id_pracownika = pensje.id_pracownika 
+WHERE
+pensja.kwota > 1500 AND pensja.kwota < 3000;
+
+SELECT imie, nazwisko FROM pracownicy 
+JOIN godziny 
+ON pracownicy.id_pracownika = godziny.id_pracownika
+JOIN wynagrodzenie
+ON pracownicy.id_pracownika = wynagrodzenie.id_pracownika
+JOIN pensje
+ON wynagrodzenie.id_pensji = pensje.id_pensji
+WHERE premia.kwota = 0 AND liczba_godzin > 160;
+
+SELECT * FROM pracownicy 
+JOIN wynagrodzenie
+ON pracownicy.id_pracownika = wynagrodzenie.id_pracownika
+JOIN pensje
+ON wynagrodzenie.id_pensji = pensje.id_pensji
+GROUP BY pensja.kwota;
+
+SELECT * FROM pracownicy 
+JOIN wynagrodzenie
+ON pracownicy.id_pracownika = wynagrodzenie.id_pracownika
+JOIN pensje
+ON wynagrodzenie.id_pensji = pensje.id_pensji
+JOIN premie
+ON wynagrodzenie.id_premii = premie.id_premii
+GROUP BY pensja.kwota AND premia.kwota DESC;
+
+SELECT COUNT pensje.stanowisko FROM pensje 
+
+SELECT MIN pensje.stanowisko FROM premie
+WHERE pensje.stanowisko = 'dyrektor'
+UNION
+SELECT MAX pensje.stanowisko FROM premie
+WHERE pensje.stanowisko = 'dyrektor'
+UNION
+SELECT AVG pensje.stanowisko FROM premie
+WHERE pensje.stanowisko = 'dyrektor'
+
+SELECT SUM * pensje.kwota FROM pensje
+
+SELECT SUM * pensje.kwota FROM pensje
+GROUP BY pensje.stanowisko
+
+#cwiczenie z 15.05:
+
+UPDATE ksiegowosc.pracownicy
+SET telefon= CONCAT('(+48)',telefon)
+
+UPDATE ksiegowosc.pracownicy
+SET telefon= CONCAT(SUBSTRING(telefon,1,8),'-',substring(telefon,9,3),'-',substring(telefon,12,3))
+
+Select * from ksiegowosc.pracownicy order by length(nazwisko) desc limit 1
+Select PR.imie,PR.nazwisko,PR.adres,PR.telefon,PA.Kwota as Pensja,PM.kwota as Premia from ksiegowosc.pracownicy PR
+
+Left join ksiegowosc.wynagrodzenie W on PR.id_pracownika=W.id_pracownika
+Left join ksiegowosc.pensja PA on W.id_pensji=PA.id_pensji
+Left join ksiegowosc.premia PM on W.id_premii =PM.id_premii
+
+Select PR.imie,PR.nazwisko,PR.adres,PR.telefon,MD5(PA.stanowisko) as stanowisko ,PA.kwota from ksiegowosc.pracownicy PR,ksiegowosc.wynagrodzenie W,ksiegowosc.pensja PA
+Where PR.id_pracownika = W.id_pracownika AND W.id_pensji=PA.id_pensji -- zamienione stanowsiko i imie gdyz kwota jest intem
+
+Select 'Pracownik',PR.imie,PR.nazwisko,'w dniu',W.data,'Otrzymał pensje całkowitą na kwotę',Sum(PA.kwota)+Sum(PM.kwota) as wynagrodzenie,'gdzie wynagrodzenie zasadnicze wynosiło:', PA.Kwota,'premia:',PM.kwota from ksiegowosc.pracownicy PR,ksiegowosc.wynagrodzenie W,ksiegowosc.pensja PA,ksiegowosc.premia PM
+Where PR.id_pracownika = W.id_pracownika AND W.id_pensji=PA.id_pensji AND W.id_premii=PM.id_premii
+Group by PR.imie,PR.nazwisko,W.data,PA.kwota,PM.kwota
