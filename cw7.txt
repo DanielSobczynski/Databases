@@ -1,0 +1,30 @@
+#polecenia w CMD:
+
+#zad1
+
+# backup bazy danych
+cd C:\Program Files\PostgreSQL\12\bin
+pg_dump -U postgres -Fc firma > database_service.sql
+
+# przywrócenie bazy danych 
+cd C:\Program Files\PostgreSQL\12\bin
+pg_restore -U postgres -d firma "C:\Program Files\PostgreSQL\12\bin\database_service.sql"
+
+#zad2
+
+# backup pełny
+BACKUP DATABASE AdventureWorks2017
+ TO DISK = 'C:\ZAJECIA\AGH\IVSEM\BD\CW\AW17.bak'
+    WITH FORMAT;
+	
+#backup HumanResources
+GO
+
+#zad3
+
+# wizualizacja
+
+CREATE VIEW loginy_dep AS SELECT hmd.Name, hme.LoginID FROM AdventureWorks2017.HumanResources.Department hmd, 
+AdventureWorks2017.HumanResources.EmployeeDepartmentHistory hmedh, AdventureWorks2017.HumanResources.Employee hme 
+WHERE hmd.DepartmentID=hmedh.DepartmentID AND hme.BusinessEntityID = hmedh.BusinessEntityID
+
