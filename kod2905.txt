@@ -1,0 +1,68 @@
+#zad 1
+
+BEGIN
+	SELECT AVG(HREPR.Rate) AS STAWKA FROM AdventureWorks2017.HumanResources.EmployeePayHistory HREPR;
+	SELECT HRE.*, HREPR.Rate FROM AdventureWorks2017.HumanResources.EmployeePayHistory HREPR, AdventureWorks2017.HumanResources.Employee HRE
+	WHERE HREPR.BusinessEntityID=HRE.BusinessEntityID AND HREPR.Rate < (SELECT AVG(HREPR.Rate) FROM AdventureWorks2017.HumanResources.EmployeePayHistory HREPR)
+END;
+
+#zad2
+
+CREATE FUNCTION findOrderDate(@ord_num INT)
+RETURNS TABLE AS
+RETURN(
+	SELECT SSOH.ShipDate as Order_Date FROM AdventureWorks2017.Sales.SalesOrderHeader SSOH
+WHERE SSOH.SalesOrderID = @ord_num
+);
+
+-- Przyklad zapytania: 
+SELECT * FROM findOrderDate(37995)
+
+#zad3
+
+CREATE PROCEDURE findProductDetails @product nvarchar(50)
+AS 
+BEGIN
+	SELECT PP.ProductID, PP.ProductNumber, PP.SellEndDate FROM  AdventureWorks2017.Production.Product PP 
+	WHERE PP.Name=@product;
+END;
+
+-- Przyklad zapytania: 
+EXEC findProductDetails @product = 'Fork Crown'
+
+#zad4
+
+CREATE FUNCTION findCardNumber(@ord_num  INT)
+RETURNS TABLE AS
+RETURN (SELECT SCC.CardNumber FROM AdventureWorks2017.Sales.CreditCard SCC
+INNER JOIN AdventureWorks2017.Sales.SalesOrderHeader SSOH 
+ON SCC.CreditCardID = SSOH.CreditCardID 
+AND @ord_num = SSOH.SalesOrderID);
+
+-- Przyklad zapytania:
+SELECT *FROM findCardNumber(37995)
+
+#zad5
+
+CREATE PROCEDURE divideNumbers(@num1 INT = 1, @num2 INT = 1)
+AS
+DECLARE @result FLOAT;
+DECLARE @error AS NVARCHAR(500);
+
+IF @num1 < @num2 
+BEGIN
+	SET @error = 'Niewłaściwie zdefiniowałeś dane wejściowe';
+	RAISERROR(@error,8,1);
+	RETURN;
+END;
+
+ELSE 
+BEGIN
+	SET @wynik = @num1/@num2;
+	SELECT @result as quotient;
+	RETURN;
+END;
+
+-- Przyklad zapytania:
+EXEC divideNumbers @num1=27, @num2=13
+
