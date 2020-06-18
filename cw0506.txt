@@ -1,0 +1,61 @@
+#zad 1.
+
+CREATE PROCEDURE Fibonacci
+(
+@n INT
+)
+
+AS 
+DECLARE @n INT=0;
+DECLARE @num1 INT=0;
+DECLARE @num2 INT=1;
+
+IF @n = 1
+BEGIN
+ SET @fib=0 ;
+END;
+
+ELSE 
+BEGIN
+	WHILE @n-1 > 1
+	BEGIN
+	 SET @n = @n-1;
+	 SET @fib = @num1 + @num2;
+	 SET @num1 = @num2;
+	 SET @num2 = @fib;
+	 
+	END;
+END;
+SELECT @fib as ciagFibonacciego;
+RETURN;
+
+Exec Fibonacci @n = 9
+
+#zad 2.
+
+CREATE  TRIGGER LastNameCapitalize on Person.Person
+FOR UPDATE AS
+UPDATE Person SET LastName=upper(LastName)
+UPDATE Person.Person Set FirstName='Lee' Where BusinessEntityID=1
+
+#zad 3.
+
+CREATE TRIGGER taxRateMonitoring ON Sales.SalesTaxRate
+AFTER UPDATE AS
+
+BEGIN
+SET NOCOUNT ON;
+ DECLARE @new_tax FLOAT;
+ DECLARE @old_tax FLOAT;
+ SELECT @new_tax= TaxRate FROM inserted
+ SELECT @old_tax = TaxRate FROM deleted
+ 
+ IF ((@new_tax > @old_tax+ 0.3* @old_tax) OR (@new_tax < @old_tax - 0.3* @old_tax))
+  BEGIN
+     print 'Wystapil blad przy zmianie pola TaxRate. Przekroczono limit 30 % poprzedniej wartosci'
+     ROLLBACK
+     RETURN
+  END;
+ END;
+
+ UPDATE Sales.SalesTaxRate SET TaxRate='25' WHERE SalesTaxRateID=1
